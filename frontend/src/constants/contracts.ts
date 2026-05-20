@@ -22,6 +22,15 @@ export const IMPLEMENTATIONS = {
   CKNOW_MARKET:       "0x99478Bf0c3f049E9255aAB9039a5C3D8CF5C8FA3" as Address,
 } as const;
 
+/** ERC-8004 Agent Trust Protocol — Celo Mainnet */
+export const ERC8004 = {
+  IDENTITY_REGISTRY:   "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432" as Address,
+  REPUTATION_REGISTRY: "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63" as Address,
+} as const;
+
+/** Self Protocol Hub V2 — Celo Mainnet */
+export const SELF_HUB_V2 = "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF" as Address;
+
 /** Celo Mainnet chain ID */
 export const CELO_CHAIN_ID = 42220;
 
