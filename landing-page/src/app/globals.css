@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #09090b;
+  color: #fafafa;
+  font-family: 'Space Mono', 'Courier New', monospace;
+}
