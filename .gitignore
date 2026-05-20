@@ -1,0 +1,21 @@
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/broadcast/*/31337/
+contracts/broadcast/**/dry-run/
+contracts/docs/
+
+# Environment files — JANGAN PERNAH COMMIT
+.env
+.env.local
+.env.*.local
+
+# Node / frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.vercel/
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
