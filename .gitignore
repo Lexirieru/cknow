@@ -16,9 +16,16 @@ frontend/.next/
 frontend/.vercel/
 frontend/dist/
 
+# Backend
+backend/node_modules/
+backend/cknow.db
+backend/*.db-shm
+backend/*.db-wal
+backend/bun.lockb
+
 # OS
 .DS_Store
 Thumbs.db
 
-# Reference project (not part of cknow)
-Mnemosyne/
+# Reference projects (not part of cknow)
+references/
