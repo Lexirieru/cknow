@@ -23,51 +23,83 @@ export default function MarketPage() {
   }, [])
 
   return (
-    <div style={{ padding: '32px 28px', fontFamily: T.codeFont, color: T.text, maxWidth: 900 }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 4px' }}>MARKET</h1>
-        <p style={{ fontSize: 11, color: T.muted, margin: 0 }}>Buy and sell knowledge iNFTs.</p>
+    <div style={{ padding: '40px 40px', fontFamily: T.codeFont, color: T.text, maxWidth: 960 }}>
+
+      {/* Page header */}
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontFamily: T.pixelFont, fontSize: 12, fontWeight: 400, margin: '0 0 12px', color: T.accent }}>
+          ▸ MARKET
+        </h1>
+        <p style={{ fontSize: 10, color: T.muted, margin: 0 }}>Buy and sell knowledge iNFTs.</p>
       </div>
 
       {loading && <LoadingDots />}
 
       {error && (
-        <div style={{ background: T.dangerBg, border: `1px solid rgba(248,113,113,0.3)`, borderRadius: 3, padding: '10px 14px', fontSize: 11, color: T.danger, marginBottom: 16 }}>
-          {error}
+        <div style={{ background: T.dangerBg, border: `2px solid rgba(255,36,66,0.4)`, padding: '12px 16px', fontSize: 10, color: T.danger, marginBottom: 20, boxShadow: '4px 4px 0 rgba(255,36,66,0.15)' }}>
+          ✕ {error}
         </div>
       )}
 
       {!loading && !error && listings.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '64px 0' }}>
-          <p style={{ fontSize: 12, color: T.muted }}>No active listings.</p>
+        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+          <p style={{ fontFamily: T.pixelFont, fontSize: 8, color: T.muted }}>NO ACTIVE LISTINGS.</p>
         </div>
       )}
 
       {listings.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
           {listings.map(l => (
-            <div key={l.tokenId} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 4, padding: 18 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+            <div
+              key={l.tokenId}
+              style={{
+                background: T.surface,
+                border: `2px solid ${T.border}`,
+                boxShadow: '4px 4px 0 rgba(0,0,0,0.4)',
+                padding: 20,
+              }}
+            >
+              {/* iNFT id + status */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                 <div>
-                  <div style={{ fontSize: 9, color: T.muted, marginBottom: 4 }}>iNFT</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: T.accent }}>#{l.tokenId}</div>
+                  <div style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.muted, marginBottom: 6 }}>iNFT</div>
+                  <div style={{ fontFamily: T.pixelFont, fontSize: 16, color: T.accent }}>#{l.tokenId}</div>
                 </div>
-                <Tag>ACTIVE</Tag>
+                <Tag variant="success">ACTIVE</Tag>
               </div>
 
-              <div style={{ fontSize: 9, color: T.muted, marginBottom: 2 }}>SELLER</div>
-              <div style={{ fontSize: 10, color: T.text, marginBottom: 14 }}>{truncate(l.seller)}</div>
+              {/* Seller */}
+              <div style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.muted, marginBottom: 4 }}>SELLER</div>
+              <div style={{ fontSize: 10, color: T.text, marginBottom: 14, fontFamily: T.codeFont }}>{truncate(l.seller)}</div>
 
-              <div style={{ fontSize: 9, color: T.muted, marginBottom: 2 }}>PRICE</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 16 }}>
-                {l.price} <span style={{ fontSize: 9, color: T.muted }}>{truncate(l.paymentToken)}</span>
+              {/* Price */}
+              <div style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.muted, marginBottom: 4 }}>PRICE</div>
+              <div style={{ marginBottom: 20 }}>
+                <span style={{ fontFamily: T.pixelFont, fontSize: 12, color: T.text }}>{l.price}</span>
+                <span style={{ fontFamily: T.codeFont, fontSize: 9, color: T.muted, marginLeft: 6 }}>{truncate(l.paymentToken)}</span>
               </div>
 
+              {/* Buy action */}
               {!isConnected ? (
-                <div style={{ fontSize: 9, color: T.muted }}>Connect wallet to buy</div>
+                <div style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.muted }}>CONNECT TO BUY</div>
               ) : (
-                <button style={{ width: '100%', background: T.accent, color: '#000', border: 'none', borderRadius: 3, padding: '9px 0', fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: T.codeFont }}>
-                  BUY
+                <button
+                  style={{
+                    width: '100%',
+                    background: T.accent,
+                    color: '#000',
+                    border: 'none',
+                    padding: '10px 0',
+                    fontFamily: T.pixelFont,
+                    fontSize: 8,
+                    letterSpacing: '0.05em',
+                    cursor: 'pointer',
+                    boxShadow: T.pixelShadow,
+                  }}
+                  onMouseDown={e => { (e.currentTarget as HTMLElement).style.transform = 'translate(4px,4px)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
+                  onMouseUp={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = T.pixelShadow }}
+                >
+                  ▶ BUY
                 </button>
               )}
             </div>

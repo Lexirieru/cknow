@@ -2,8 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import './globals.css'
 import { Providers } from '@/lib/providers'
-import { TopBar } from '@/components/TopBar'
-import { Sidebar } from '@/components/Sidebar'
+import { Navbar } from '@/components/Navbar'
 
 export const metadata: Metadata = {
   title: 'cknow — Decentralized Knowledge Protocol',
@@ -16,15 +15,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, height: '100vh', display: 'flex', flexDirection: 'column', background: '#09090b', overflow: 'hidden' }}>
+      <body style={{ margin: 0, padding: 0, height: '100vh', display: 'flex', flexDirection: 'column', background: '#0a0a0f', overflow: 'hidden' }}>
         <Providers cookies={cookies}>
-          <TopBar />
-          <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-            <Sidebar />
-            <main style={{ flex: 1, overflowY: 'auto' }}>
-              {children}
-            </main>
-          </div>
+          <Navbar />
+          <main style={{ flex: 1, overflowY: 'auto' }}>
+            {children}
+          </main>
         </Providers>
       </body>
     </html>

@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { getEntries, query, type Entry, type QueryResult } from '@/lib/api'
 import { T, Tag, LoadingDots } from '@/components/design-system'
 
-const DOMAINS: Record<number, string> = { 0: 'Factual', 1: 'Labeled', 3: 'Observation' }
+const DOMAINS: Record<number, string> = { 0: 'FACTUAL', 1: 'LABELED', 3: 'OBS' }
 
 function truncate(addr: string) {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`
@@ -43,10 +43,14 @@ export default function ExplorePage() {
     : entries.filter(e => domain === null || e.domain === domain)
 
   return (
-    <div style={{ padding: '32px 28px', fontFamily: T.codeFont, color: T.text, maxWidth: 900 }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 4px', letterSpacing: '-0.01em' }}>EXPLORE</h1>
-        <p style={{ fontSize: 11, color: T.muted, margin: 0 }}>Search and browse the knowledge graph.</p>
+    <div style={{ padding: '40px 40px', fontFamily: T.codeFont, color: T.text, maxWidth: 960 }}>
+
+      {/* Page header */}
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontFamily: T.pixelFont, fontSize: 12, fontWeight: 400, margin: '0 0 12px', color: T.accent, letterSpacing: '0.05em' }}>
+          ▸ EXPLORE
+        </h1>
+        <p style={{ fontSize: 10, color: T.muted, margin: 0 }}>Search and browse the knowledge graph.</p>
       </div>
 
       {/* Search */}
@@ -55,30 +59,45 @@ export default function ExplorePage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Semantic search…"
-          style={{ flex: 1, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 3, padding: '9px 14px', fontSize: 12, color: T.text, fontFamily: T.codeFont, outline: 'none' }}
+          style={{ flex: 1, background: T.surface, border: `2px solid ${T.border}`, padding: '10px 14px', fontSize: 11, color: T.text, fontFamily: T.codeFont, outline: 'none' }}
           onFocus={e => (e.target.style.borderColor = T.accent)}
           onBlur={e => (e.target.style.borderColor = T.border)}
         />
-        <button type="submit" style={{ background: T.accent, color: '#000', border: 'none', borderRadius: 3, padding: '0 16px', fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', cursor: 'pointer', fontFamily: T.codeFont }}>
+        <button
+          type="submit"
+          style={{ background: T.accent, color: '#000', border: 'none', padding: '0 18px', fontFamily: T.pixelFont, fontSize: 7, letterSpacing: '0.05em', cursor: 'pointer', boxShadow: T.pixelShadow }}
+        >
           {searching ? '…' : 'SEARCH'}
         </button>
         {results && (
-          <button type="button" onClick={() => { setResults(null); setSearch('') }} style={{ background: 'transparent', color: T.muted, border: `1px solid ${T.border}`, borderRadius: 3, padding: '0 12px', fontSize: 9, cursor: 'pointer', fontFamily: T.codeFont }}>
-            CLEAR
+          <button
+            type="button"
+            onClick={() => { setResults(null); setSearch('') }}
+            style={{ background: 'transparent', color: T.muted, border: `2px solid ${T.border}`, padding: '0 12px', fontFamily: T.pixelFont, fontSize: 7, cursor: 'pointer' }}
+          >
+            CLR
           </button>
         )}
       </form>
 
       {/* Domain filter */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 32 }}>
         {[null, 0, 1, 3].map(d => (
-          <button key={String(d)} onClick={() => setDomain(d)} style={{
-            background: domain === d ? T.accentLight : 'transparent',
-            color: domain === d ? T.accent : T.muted,
-            border: `1px solid ${domain === d ? T.accent : T.border}`,
-            borderRadius: 2, padding: '4px 10px', fontSize: 9, letterSpacing: '0.08em',
-            cursor: 'pointer', fontFamily: T.codeFont,
-          }}>
+          <button
+            key={String(d)}
+            onClick={() => setDomain(d)}
+            style={{
+              background: domain === d ? T.accent : 'transparent',
+              color: domain === d ? '#000' : T.muted,
+              border: `2px solid ${domain === d ? T.accent : T.border}`,
+              padding: '6px 12px',
+              fontFamily: T.pixelFont,
+              fontSize: 7,
+              letterSpacing: '0.04em',
+              cursor: 'pointer',
+              boxShadow: domain === d ? T.pixelShadow : 'none',
+            }}
+          >
             {d === null ? 'ALL' : DOMAINS[d]}
           </button>
         ))}
@@ -88,30 +107,42 @@ export default function ExplorePage() {
       {loading ? (
         <LoadingDots />
       ) : displayed.length === 0 ? (
-        <p style={{ fontSize: 12, color: T.muted }}>No entries found.</p>
+        <p style={{ fontFamily: T.pixelFont, fontSize: 8, color: T.muted }}>NO ENTRIES FOUND.</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {results && (
-            <p style={{ fontSize: 10, color: T.muted, margin: '0 0 4px' }}>
-              {results.length} semantic results for &ldquo;{search}&rdquo;
+            <p style={{ fontSize: 9, color: T.muted, margin: '0 0 6px', fontFamily: T.codeFont }}>
+              {results.length} results for &ldquo;{search}&rdquo;
             </p>
           )}
           {(displayed as (Entry & { _similarity?: number })[]).map(entry => (
-            <div key={entry.entryId} style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 4, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+            <div
+              key={entry.entryId}
+              style={{
+                background: T.surface,
+                border: `2px solid ${T.border}`,
+                boxShadow: '4px 4px 0 rgba(0,0,0,0.4)',
+                padding: '14px 18px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: 16,
+              }}
+            >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                  <Tag>{DOMAINS[entry.domain] ?? `domain:${entry.domain}`}</Tag>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                  <Tag>{DOMAINS[entry.domain] ?? `D:${entry.domain}`}</Tag>
                   {entry.tags?.map(t => <Tag key={t} variant="ghost">{t}</Tag>)}
                 </div>
                 {entry.content && (
-                  <p style={{ fontSize: 11, color: T.text, margin: '0 0 8px', lineHeight: 1.6, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  <p style={{ fontSize: 10, color: T.text, margin: '0 0 10px', lineHeight: 1.7, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                     {entry.content}
                   </p>
                 )}
-                <span style={{ fontSize: 9, color: T.muted }}>{truncate(entry.submitter)}</span>
+                <span style={{ fontSize: 9, color: T.muted, fontFamily: T.codeFont }}>{truncate(entry.submitter)}</span>
               </div>
               {entry._similarity !== undefined && (
-                <span style={{ fontSize: 9, color: T.accent, flexShrink: 0 }}>
+                <span style={{ fontFamily: T.pixelFont, fontSize: 8, color: T.accent, flexShrink: 0 }}>
                   {Math.round(entry._similarity * 100)}%
                 </span>
               )}

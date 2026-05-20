@@ -10,6 +10,16 @@ function truncate(addr: string) {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`
 }
 
+const btnBase: React.CSSProperties = {
+  border: 'none',
+  fontFamily: T.pixelFont,
+  fontSize: 7,
+  letterSpacing: '0.05em',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  transition: 'transform 0.05s',
+}
+
 export function WalletButton() {
   const { open } = useAppKit()
   const { address, isConnected } = useAccount()
@@ -25,31 +35,31 @@ export function WalletButton() {
     }
   }, [inMiniPay, isConnected, connect])
 
-  // MiniPay: connection implicit, jangan tampilkan tombol connect
   if (inMiniPay) {
     if (isConnected && address) {
       return (
-        <span style={{ fontFamily: T.codeFont, fontSize: 10, color: T.accent, letterSpacing: '0.08em' }}>
+        <span style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.accent, letterSpacing: '0.05em' }}>
           ● {truncate(address)}
         </span>
       )
     }
     return (
-      <span style={{ fontFamily: T.codeFont, fontSize: 10, color: T.muted, letterSpacing: '0.08em' }}>
-        connecting...
+      <span style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.muted, letterSpacing: '0.05em' }}>
+        CONNECTING<span className="pixel-blink">█</span>
       </span>
     )
   }
 
-  // Luar MiniPay: pakai AppKit modal
   if (isConnected && address) {
     return (
       <button
         onClick={() => open({ view: 'Account' })}
         style={{
-          background: T.accentLight, border: `1px solid ${T.tagBorder}`,
-          borderRadius: 3, padding: '5px 14px', fontFamily: T.codeFont,
-          fontSize: 10, letterSpacing: '0.08em', color: T.accent, cursor: 'pointer',
+          ...btnBase,
+          background: T.accentLight,
+          color: T.accent,
+          border: `2px solid ${T.accent}`,
+          padding: '6px 12px',
         }}
       >
         ● {truncate(address)}
@@ -61,12 +71,14 @@ export function WalletButton() {
     <button
       onClick={() => open()}
       style={{
-        background: T.accent, border: 'none', borderRadius: 3,
-        padding: '7px 16px', fontFamily: T.codeFont, fontSize: 10,
-        letterSpacing: '0.1em', color: '#000', cursor: 'pointer', fontWeight: 700,
+        ...btnBase,
+        background: T.accent,
+        color: '#000',
+        padding: '8px 14px',
+        boxShadow: T.pixelShadow,
       }}
     >
-      CONNECT WALLET
+      CONNECT
     </button>
   )
 }
