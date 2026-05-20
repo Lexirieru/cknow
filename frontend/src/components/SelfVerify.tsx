@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { SelfAppBuilder, getUniversalLink } from '@selfxyz/qrcode'
 import dynamic from 'next/dynamic'
 import type { Address } from 'viem'
@@ -30,11 +30,7 @@ function isMobileDevice() {
 export default function SelfVerify({ address, onVerified }: Props) {
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    setIsMobile(isMobileDevice())
-  }, [])
+  const [isMobile] = useState(() => typeof window !== 'undefined' && isMobileDevice())
 
   const selfApp = new SelfAppBuilder({
     appName: 'cknow',

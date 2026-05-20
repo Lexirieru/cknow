@@ -70,6 +70,7 @@ export type AgentSummary = {
 }
 
 /** Cek apakah address sudah terdaftar sebagai agent ERC-8004 (agentId = tokenId) */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getAgentId(address: Address): Promise<bigint | null> {
   // Token IDs dimulai dari 1; cek apakah address memiliki token dengan mencoba ownerOf
   // Cara praktis: loop 1..N tidak scalable. Pakai event scan atau gunakan isAuthorizedOrOwner(addr, guessId).

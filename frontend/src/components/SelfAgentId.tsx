@@ -27,14 +27,13 @@ export default function SelfAgentId({ address }: Props) {
   const [stage, setStage] = useState<Stage>('loading')
   const [agents, setAgents] = useState<ApiAgentsForHuman | null>(null)
   const [deepLink, setDeepLink] = useState<string | null>(null)
-  const [sessionRef, setSessionRef] = useState<RegistrationSession | null>(null)
+  const [, setSessionRef] = useState<RegistrationSession | null>(null)
   const [result, setResult] = useState<RegistrationResult | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile] = useState(() => typeof window !== 'undefined' && isMobileDevice())
   const pollingRef = useRef(false)
 
   useEffect(() => {
-    setIsMobile(isMobileDevice())
     SelfAgent.getAgentsForHuman(address, { network: 'mainnet' })
       .then(data => {
         setAgents(data)

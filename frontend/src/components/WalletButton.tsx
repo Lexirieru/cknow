@@ -14,16 +14,16 @@ export function WalletButton() {
   const { open } = useAppKit()
   const { address, isConnected } = useAccount()
   const { connect } = useConnect()
-  const [inMiniPay, setInMiniPay] = useState(false)
+  const [inMiniPay] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return (window.ethereum as { isMiniPay?: boolean } | undefined)?.isMiniPay === true
+  })
 
   useEffect(() => {
-    const eth = window.ethereum as { isMiniPay?: boolean } | undefined
-    const miniPay = eth?.isMiniPay === true
-    setInMiniPay(miniPay)
-    if (miniPay && !isConnected) {
+    if (inMiniPay && !isConnected) {
       connect({ connector: injected() })
     }
-  }, [isConnected, connect])
+  }, [inMiniPay, isConnected, connect])
 
   // MiniPay: connection implicit, jangan tampilkan tombol connect
   if (inMiniPay) {

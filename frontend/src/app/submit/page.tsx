@@ -1,9 +1,43 @@
 'use client'
 
-import { useState } from 'react'
-import { useAccount } from 'wagmi'
+import { useState, useEffect, useRef } from 'react'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { prepare, confirm } from '@/lib/api'
-import { T, Tag, BtnPrimary, BtnGhost } from '@/components/design-system'
+import { CONTRACTS } from '@/constants/contracts'
+import { NATIVE_CELO, CELO, USDM, USDC, type Token } from '@/constants/tokens'
+import { T, BtnPrimary, BtnGhost } from '@/components/design-system'
+
+const REGISTRY_ABI = [
+  {
+    name: 'submit',
+    type: 'function',
+    stateMutability: 'payable',
+    inputs: [
+      { name: 'storageRef', type: 'string' },
+      { name: 'embeddingRef', type: 'string' },
+      { name: 'tags', type: 'string[]' },
+      { name: 'domain', type: 'uint8' },
+      { name: 'paymentToken', type: 'address' },
+      { name: 'stakeAmt', type: 'uint256' },
+    ],
+    outputs: [{ name: 'entryId', type: 'bytes32' }],
+  },
+] as const
+
+const ERC20_ABI = [
+  {
+    name: 'approve',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+  },
+] as const
+
+const STAKE_TOKENS: Token[] = [CELO, USDM, USDC]
 
 const DOMAINS = [
   { value: 0, label: 'Factual', desc: 'Facts, definitions, encyclopedic knowledge' },
@@ -15,16 +49,54 @@ type Step = 'form' | 'confirm' | 'done'
 
 export default function SubmitPage() {
   const { address, isConnected } = useAccount()
+
+  // Form state
   const [step, setStep] = useState<Step>('form')
   const [content, setContent] = useState('')
   const [domain, setDomain] = useState(0)
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [stakeToken, setStakeToken] = useState<Token>(STAKE_TOKENS[0])
+
+  // Prepare state
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [prepared, setPrepared] = useState<{ storageRef: string; embeddingRef: string; encryptionKeyId: string } | null>(null)
-  const [txHash, setTxHash] = useState('')
+
+  // Result
   const [result, setResult] = useState<{ entryId: string; txHash: string } | null>(null)
+
+  // Track whether ERC20 approve flow was triggered (avoids setState in effect)
+  const erc20FlowRef = useRef(false)
+
+  // On-chain write: approve (ERC20 only)
+  const { writeContract: writeApprove, data: approveTxHash, isPending: approving } = useWriteContract()
+  const { isSuccess: approveConfirmed } = useWaitForTransactionReceipt({ hash: approveTxHash })
+
+  // On-chain write: submit
+  const { writeContract: writeSubmit, data: submitTxHash, isPending: submitting, error: writeError } = useWriteContract()
+  const { isPending: waitingReceipt, isSuccess: receiptSuccess } = useWaitForTransactionReceipt({ hash: submitTxHash })
+
+  // After approve confirmed, trigger submit (no setState in effect body)
+  useEffect(() => {
+    if (!approveConfirmed || !erc20FlowRef.current || !prepared) return
+    erc20FlowRef.current = false
+    writeSubmit({
+      address: CONTRACTS.CKNOW_REGISTRY,
+      abi: REGISTRY_ABI,
+      functionName: 'submit',
+      args: [prepared.storageRef, prepared.embeddingRef, tags, domain, stakeToken.address, stakeToken.minStake],
+      value: 0n,
+    })
+  }, [approveConfirmed, prepared, tags, domain, stakeToken.address, stakeToken.minStake, writeSubmit])
+
+  // After submit tx confirmed, call backend confirm (setState only in async callbacks)
+  useEffect(() => {
+    if (!receiptSuccess || !submitTxHash || !prepared || step !== 'confirm') return
+    confirm(submitTxHash, prepared.storageRef, prepared.embeddingRef, prepared.encryptionKeyId, content, domain, tags, address)
+      .then(r => { setResult(r); setStep('done') })
+      .catch(e => setError(e instanceof Error ? e.message : 'Confirm failed'))
+  }, [receiptSuccess, submitTxHash, prepared, step, content, domain, tags, address])
 
   function addTag() {
     const t = tagInput.trim().toLowerCase().replace(/\s+/g, '-')
@@ -46,24 +118,38 @@ export default function SubmitPage() {
     }
   }
 
-  async function handleConfirm() {
-    if (!prepared || !txHash.trim()) return
-    setLoading(true); setError(null)
-    try {
-      const r = await confirm(txHash, prepared.storageRef, prepared.embeddingRef, prepared.encryptionKeyId, content, domain, tags, address)
-      setResult(r)
-      setStep('done')
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Confirm failed')
-    } finally {
-      setLoading(false)
+  function handleSubmitOnChain() {
+    if (!prepared) return
+    setError(null)
+    const isNative = stakeToken.address === NATIVE_CELO
+    if (isNative) {
+      writeSubmit({
+        address: CONTRACTS.CKNOW_REGISTRY,
+        abi: REGISTRY_ABI,
+        functionName: 'submit',
+        args: [prepared.storageRef, prepared.embeddingRef, tags, domain, NATIVE_CELO, 0n],
+        value: stakeToken.minStake,
+      })
+    } else {
+      erc20FlowRef.current = true
+      writeApprove({
+        address: stakeToken.address,
+        abi: ERC20_ABI,
+        functionName: 'approve',
+        args: [CONTRACTS.STAKE_VAULT, stakeToken.minStake],
+      })
     }
   }
+
+  const isApprovePending = !!approveTxHash && !approveConfirmed
+  const isSubmitPending = !!submitTxHash && !receiptSuccess
+  const isProcessing = approving || isApprovePending || submitting || isSubmitPending || waitingReceipt
+  const displayError = writeError?.message ?? error
 
   if (!isConnected) {
     return (
       <div style={{ padding: '80px 28px', fontFamily: T.codeFont, color: T.text, textAlign: 'center' }}>
-        <p style={{ fontSize: 13, color: T.muted, marginBottom: 8 }}>Connect wallet to submit knowledge.</p>
+        <p style={{ fontSize: 13, color: T.muted }}>Connect wallet to submit knowledge.</p>
       </div>
     )
   }
@@ -78,7 +164,7 @@ export default function SubmitPage() {
           <div style={{ fontSize: 10, color: T.muted, marginBottom: 4 }}>Tx Hash</div>
           <div style={{ fontSize: 11, color: T.text, wordBreak: 'break-all' }}>{result.txHash}</div>
         </div>
-        <BtnGhost onClick={() => { setStep('form'); setContent(''); setTags([]); setTxHash(''); setPrepared(null); setResult(null) }}>
+        <BtnGhost onClick={() => { setStep('form'); setContent(''); setTags([]); setPrepared(null); setResult(null); setError(null) }}>
           SUBMIT ANOTHER
         </BtnGhost>
       </div>
@@ -102,9 +188,9 @@ export default function SubmitPage() {
         ))}
       </div>
 
-      {error && (
+      {displayError && (
         <div style={{ background: T.dangerBg, border: `1px solid rgba(248,113,113,0.3)`, borderRadius: 3, padding: '10px 14px', marginBottom: 16, fontSize: 11, color: T.danger }}>
-          {error}
+          {displayError}
         </div>
       )}
 
@@ -163,6 +249,23 @@ export default function SubmitPage() {
             </div>
           </div>
 
+          {/* Stake token */}
+          <div>
+            <label style={{ fontSize: 9, letterSpacing: '0.1em', color: T.muted, display: 'block', marginBottom: 8 }}>STAKE TOKEN</label>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {STAKE_TOKENS.map(tk => (
+                <button
+                  key={tk.symbol}
+                  onClick={() => setStakeToken(tk)}
+                  style={{ padding: '7px 14px', fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', background: stakeToken.symbol === tk.symbol ? T.accentLight : T.surface, border: `1px solid ${stakeToken.symbol === tk.symbol ? T.accent : T.border}`, borderRadius: 3, color: stakeToken.symbol === tk.symbol ? T.accent : T.muted, cursor: 'pointer', fontFamily: T.codeFont }}
+                >
+                  {tk.symbol}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 9, color: T.muted, marginTop: 6 }}>Min stake: 0.001 {stakeToken.symbol}</div>
+          </div>
+
           <BtnPrimary onClick={handlePrepare} disabled={loading || !content.trim()} style={{ alignSelf: 'flex-start' }}>
             {loading ? 'PREPARING…' : 'NEXT →'}
           </BtnPrimary>
@@ -175,30 +278,41 @@ export default function SubmitPage() {
             <div style={{ fontSize: 9, color: T.muted, marginBottom: 4 }}>STORAGE REF</div>
             <div style={{ fontSize: 10, color: T.text, wordBreak: 'break-all', marginBottom: 12 }}>{prepared.storageRef}</div>
             <div style={{ fontSize: 9, color: T.muted, marginBottom: 4 }}>EMBEDDING REF</div>
-            <div style={{ fontSize: 10, color: T.text, wordBreak: 'break-all' }}>{prepared.embeddingRef}</div>
+            <div style={{ fontSize: 10, color: T.text, wordBreak: 'break-all', marginBottom: 12 }}>{prepared.embeddingRef}</div>
+            <div style={{ fontSize: 9, color: T.muted, marginBottom: 4 }}>STAKE</div>
+            <div style={{ fontSize: 10, color: T.text }}>0.001 {stakeToken.symbol}</div>
           </div>
 
-          <div style={{ background: T.warningBg, border: `1px solid rgba(251,191,36,0.3)`, borderRadius: 3, padding: '10px 14px', fontSize: 11, color: T.warning }}>
-            Sign a transaction in your wallet to register this entry on-chain, then paste the tx hash below.
-          </div>
-
-          <div>
-            <label style={{ fontSize: 9, letterSpacing: '0.1em', color: T.muted, display: 'block', marginBottom: 8 }}>TX HASH</label>
-            <input
-              value={txHash}
-              onChange={e => setTxHash(e.target.value)}
-              placeholder="0x..."
-              style={{ width: '100%', background: T.surface, border: `1px solid ${T.border}`, borderRadius: 3, padding: '9px 14px', fontSize: 11, color: T.text, fontFamily: T.codeFont, outline: 'none', boxSizing: 'border-box' }}
-              onFocus={e => (e.target.style.borderColor = T.accent)}
-              onBlur={e => (e.target.style.borderColor = T.border)}
-            />
-          </div>
+          {approving && (
+            <div style={{ background: T.warningBg, border: `1px solid rgba(251,191,36,0.3)`, borderRadius: 3, padding: '10px 14px', fontSize: 11, color: T.warning }}>
+              Waiting for wallet approval…
+            </div>
+          )}
+          {isApprovePending && !approving && (
+            <div style={{ background: T.warningBg, border: `1px solid rgba(251,191,36,0.3)`, borderRadius: 3, padding: '10px 14px', fontSize: 11, color: T.warning }}>
+              Confirming token approval on Celo…
+            </div>
+          )}
+          {submitting && (
+            <div style={{ background: T.warningBg, border: `1px solid rgba(251,191,36,0.3)`, borderRadius: 3, padding: '10px 14px', fontSize: 11, color: T.warning }}>
+              Waiting for wallet signature…
+            </div>
+          )}
+          {isSubmitPending && !submitting && (
+            <div style={{ background: T.warningBg, border: `1px solid rgba(251,191,36,0.3)`, borderRadius: 3, padding: '10px 14px', fontSize: 11, color: T.warning }}>
+              Transaction confirming on Celo…
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: 8 }}>
-            <BtnGhost onClick={() => setStep('form')} style={{ fontSize: 9 }}>← BACK</BtnGhost>
-            <BtnPrimary onClick={handleConfirm} disabled={loading || !txHash.trim()}>
-              {loading ? 'CONFIRMING…' : 'CONFIRM ENTRY'}
-            </BtnPrimary>
+            <BtnGhost onClick={() => { setStep('form'); setError(null) }} style={{ fontSize: 9 }} disabled={isProcessing}>
+              ← BACK
+            </BtnGhost>
+            {!isProcessing && (
+              <BtnPrimary onClick={handleSubmitOnChain}>
+                SUBMIT ON CELO →
+              </BtnPrimary>
+            )}
           </div>
         </div>
       )}

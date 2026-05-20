@@ -65,15 +65,16 @@ function IdentitySection({ address }: { address: `0x${string}` }) {
 export default function ProfilePage() {
   const { address, isConnected } = useAccount()
   const [entries, setEntries] = useState<Entry[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (!address) return
-    setLoading(true)
     getEntries()
-      .then(all => setEntries(all.filter(e => e.submitter?.toLowerCase() === address.toLowerCase())))
-      .finally(() => setLoading(false))
+      .then(all => { setEntries(all.filter(e => e.submitter?.toLowerCase() === address.toLowerCase())); setLoaded(true) })
+      .catch(() => setLoaded(true))
   }, [address])
+
+  const loading = !!address && !loaded
 
   if (!isConnected || !address) {
     return (
