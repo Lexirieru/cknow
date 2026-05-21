@@ -21,7 +21,7 @@ export function Navbar() {
       borderBottom: `2px solid ${T.border}`,
       display: 'flex',
       alignItems: 'stretch',
-      height: 56,
+      height: 60,
       flexShrink: 0,
       position: 'sticky',
       top: 0,
@@ -31,18 +31,19 @@ export function Navbar() {
       <Link href="/" style={{
         display: 'flex',
         alignItems: 'center',
-        padding: '0 24px',
+        padding: '0 28px',
         borderRight: `2px solid ${T.border}`,
         textDecoration: 'none',
         flexShrink: 0,
+        gap: 10,
       }}>
-        <span style={{ fontFamily: T.pixelFont, fontSize: 11, color: T.accent, whiteSpace: 'nowrap' }}>
+        <span style={{ fontFamily: T.pixelFont, fontSize: 13, color: T.accent, whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>
           ▶ CKNOW
         </span>
       </Link>
 
       {/* Nav links */}
-      <nav style={{ display: 'flex', flex: 1 }}>
+      <nav style={{ display: 'flex', flex: 1, alignItems: 'stretch' }}>
         {NAV.map(({ href, label }) => {
           const active = pathname.startsWith(href)
           return (
@@ -52,18 +53,20 @@ export function Navbar() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                padding: '0 18px',
+                padding: '0 22px',
                 fontFamily: T.pixelFont,
-                fontSize: 7,
-                letterSpacing: '0.05em',
+                fontSize: 8,
+                letterSpacing: '0.06em',
                 color: active ? '#000' : T.muted,
                 background: active ? T.accent : 'transparent',
                 textDecoration: 'none',
                 whiteSpace: 'nowrap',
-                borderRight: `2px solid ${T.border}`,
+                borderRight: `1px solid ${T.border}`,
+                transition: 'color 0.1s, background 0.1s',
               }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = T.text }}
+              onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.color = T.muted }}
             >
-              {active && <span style={{ marginRight: 6 }}>▸</span>}
               {label}
             </Link>
           )
@@ -74,7 +77,7 @@ export function Navbar() {
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        padding: '0 20px',
+        padding: '0 24px',
         borderLeft: `2px solid ${T.border}`,
         flexShrink: 0,
       }}>

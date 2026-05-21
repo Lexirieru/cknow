@@ -19,7 +19,7 @@ function PixelCard({ label, children }: { label: string; children: React.ReactNo
   return (
     <div style={{ background: T.surface, border: `2px solid ${T.border}`, boxShadow: '4px 4px 0 rgba(0,0,0,0.4)', padding: '20px 24px', marginBottom: 16 }}>
       <div style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.muted, marginBottom: 16, letterSpacing: '0.05em' }}>
-        ▸ {label}
+        {label}
       </div>
       {children}
     </div>
@@ -82,18 +82,18 @@ export default function ProfilePage() {
 
   if (!isConnected || !address) {
     return (
-      <div style={{ padding: '120px 40px', fontFamily: T.pixelFont, color: T.text, textAlign: 'center' }}>
+      <div style={{ padding: '120px 40px', fontFamily: T.pixelFont, color: T.text, textAlign: 'center', maxWidth: 900, margin: '0 auto' }}>
         <p style={{ fontSize: 10, color: T.muted }}>CONNECT WALLET TO VIEW PROFILE.</p>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '40px 40px', fontFamily: T.codeFont, color: T.text, maxWidth: 860 }}>
+    <div style={{ padding: '48px 48px', fontFamily: T.codeFont, color: T.text, maxWidth: 900, margin: '0 auto' }}>
 
       {/* Page header */}
-      <h1 style={{ fontFamily: T.pixelFont, fontSize: 12, fontWeight: 400, margin: '0 0 28px', color: T.accent }}>
-        ▸ PROFILE
+      <h1 style={{ fontFamily: T.pixelFont, fontSize: 14, fontWeight: 400, margin: '0 0 28px', color: T.accent, letterSpacing: '0.03em' }}>
+        PROFILE
       </h1>
 
       {/* Address card */}
@@ -130,7 +130,7 @@ export default function ProfilePage() {
 
       {/* Entries */}
       <div style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.muted, margin: '28px 0 16px', letterSpacing: '0.05em' }}>
-        ▸ MY ENTRIES
+        MY ENTRIES
       </div>
 
       {loading ? (

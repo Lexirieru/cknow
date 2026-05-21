@@ -23,12 +23,12 @@ export default function MarketPage() {
   }, [])
 
   return (
-    <div style={{ padding: '40px 40px', fontFamily: T.codeFont, color: T.text, maxWidth: 960 }}>
+    <div style={{ padding: '48px 48px', fontFamily: T.codeFont, color: T.text, maxWidth: 1000, margin: '0 auto' }}>
 
       {/* Page header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: T.pixelFont, fontSize: 12, fontWeight: 400, margin: '0 0 12px', color: T.accent }}>
-          ▸ MARKET
+        <h1 style={{ fontFamily: T.pixelFont, fontSize: 14, fontWeight: 400, margin: '0 0 14px', color: T.accent, letterSpacing: '0.03em' }}>
+          MARKET
         </h1>
         <p style={{ fontSize: 10, color: T.muted, margin: 0 }}>Buy and sell knowledge iNFTs.</p>
       </div>

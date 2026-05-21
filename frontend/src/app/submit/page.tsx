@@ -158,7 +158,7 @@ export default function SubmitPage() {
 
   if (!isConnected) {
     return (
-      <div style={{ padding: '120px 40px', textAlign: 'center' }}>
+      <div style={{ padding: '120px 40px', textAlign: 'center', maxWidth: 720, margin: '0 auto' }}>
         <p style={{ fontFamily: T.pixelFont, fontSize: 10, color: T.muted }}>CONNECT WALLET TO SUBMIT.</p>
       </div>
     )
@@ -166,7 +166,7 @@ export default function SubmitPage() {
 
   if (step === 'done' && result) {
     return (
-      <div style={{ padding: '40px 40px', fontFamily: T.codeFont, color: T.text, maxWidth: 680 }}>
+      <div style={{ padding: '48px 48px', fontFamily: T.codeFont, color: T.text, maxWidth: 720, margin: '0 auto' }}>
         <div style={{ background: T.successBg, border: `2px solid rgba(57,255,20,0.4)`, boxShadow: '4px 4px 0 rgba(57,255,20,0.15)', padding: 24, marginBottom: 24 }}>
           <div style={{ fontFamily: T.pixelFont, fontSize: 9, color: T.success, marginBottom: 16 }}>✓ ENTRY SUBMITTED</div>
           <div style={{ fontFamily: T.pixelFont, fontSize: 7, color: T.muted, marginBottom: 6 }}>ENTRY ID</div>
@@ -182,12 +182,12 @@ export default function SubmitPage() {
   }
 
   return (
-    <div style={{ padding: '40px 40px', fontFamily: T.codeFont, color: T.text, maxWidth: 680 }}>
+    <div style={{ padding: '48px 48px', fontFamily: T.codeFont, color: T.text, maxWidth: 720, margin: '0 auto' }}>
 
       {/* Page header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: T.pixelFont, fontSize: 12, fontWeight: 400, margin: '0 0 12px', color: T.accent }}>
-          ▸ SUBMIT
+        <h1 style={{ fontFamily: T.pixelFont, fontSize: 14, fontWeight: 400, margin: '0 0 14px', color: T.accent, letterSpacing: '0.03em' }}>
+          SUBMIT
         </h1>
         <p style={{ fontSize: 10, color: T.muted, margin: 0 }}>Contribute knowledge. Earn iNFTs and royalties.</p>
       </div>
