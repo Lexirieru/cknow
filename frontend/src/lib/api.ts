@@ -52,7 +52,23 @@ export const query = (text: string, topK?: number, domains?: number[]) =>
 
 export const getEntries = () => get<Entry[]>('/entries')
 export const getContent = (entryId: string) => get<Entry>(`/content/${entryId}`)
-export const getMarketListings = () => get<MarketListing[]>('/market/listings')
+export async function getMarketListings(): Promise<MarketListing[]> {
+  // Backend returns a viem tuple: [tokenIds: string[], listings: struct[]]
+  const raw = await get<unknown>('/market/listings')
+  if (!Array.isArray(raw) || raw.length < 2) return []
+  const [tokenIds, structs] = raw as [
+    string[],
+    Array<{ seller: string; paymentToken: string; price: string; active: boolean }>
+  ]
+  if (!Array.isArray(tokenIds) || !Array.isArray(structs)) return []
+  return tokenIds.map((tokenId, i) => ({
+    tokenId: String(tokenId),
+    seller: structs[i].seller,
+    paymentToken: structs[i].paymentToken,
+    price: String(structs[i].price),
+    active: structs[i].active,
+  }))
+}
 export const getHealth = () => get<HealthResponse>('/health')
 export const getDiscussions = (entryId: string) => get<Discussion[]>(`/discussions/${entryId}`)
 export const postDiscussion = (entryId: string, author: string, content: string) =>

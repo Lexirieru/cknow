@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
+import Link from 'next/link'
 import { getEntries, type Entry } from '@/lib/api'
 import { T, Tag, LoadingDots } from '@/components/design-system'
 import dynamic from 'next/dynamic'
@@ -140,19 +141,25 @@ export default function ProfilePage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {entries.map(e => (
-            <div key={e.entryId} style={{ background: T.surface, border: `2px solid ${T.border}`, boxShadow: '4px 4px 0 rgba(0,0,0,0.4)', padding: '14px 18px' }}>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-                <Tag>{DOMAINS[e.domain] ?? `D:${e.domain}`}</Tag>
-                {e.inftTokenId && <Tag variant="success">iNFT #{e.inftTokenId}</Tag>}
-                {e.tags?.map(t => <Tag key={t} variant="ghost">{t}</Tag>)}
+            <Link
+              key={e.entryId}
+              href={`/entry/${e.entryId}`}
+              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+            >
+              <div style={{ background: T.surface, border: `2px solid ${T.border}`, boxShadow: '4px 4px 0 rgba(0,0,0,0.4)', padding: '14px 18px', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                  <Tag>{DOMAINS[e.domain] ?? `D:${e.domain}`}</Tag>
+                  {e.inftTokenId && <Tag variant="success">iNFT #{e.inftTokenId}</Tag>}
+                  {e.tags?.map(t => <Tag key={t} variant="ghost">{t}</Tag>)}
+                </div>
+                {e.content && (
+                  <p style={{ fontSize: 10, color: T.text, margin: '0 0 10px', lineHeight: 1.7, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    {e.content}
+                  </p>
+                )}
+                <span style={{ fontFamily: T.codeFont, fontSize: 9, color: T.muted }}>{truncate(e.entryId, 10)}</span>
               </div>
-              {e.content && (
-                <p style={{ fontSize: 10, color: T.text, margin: '0 0 10px', lineHeight: 1.7, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                  {e.content}
-                </p>
-              )}
-              <span style={{ fontFamily: T.codeFont, fontSize: 9, color: T.muted }}>{truncate(e.entryId, 10)}</span>
-            </div>
+            </Link>
           ))}
         </div>
       )}

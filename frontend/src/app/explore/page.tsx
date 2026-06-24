@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { getEntries, query, type Entry, type QueryResult } from '@/lib/api'
 import { T, Tag, LoadingDots } from '@/components/design-system'
 
@@ -116,37 +117,43 @@ export default function ExplorePage() {
             </p>
           )}
           {(displayed as (Entry & { _similarity?: number })[]).map(entry => (
-            <div
+            <Link
               key={entry.entryId}
-              style={{
-                background: T.surface,
-                border: `2px solid ${T.border}`,
-                boxShadow: '4px 4px 0 rgba(0,0,0,0.4)',
-                padding: '14px 18px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                gap: 16,
-              }}
+              href={`/entry/${entry.entryId}`}
+              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
             >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-                  <Tag>{DOMAINS[entry.domain] ?? `D:${entry.domain}`}</Tag>
-                  {entry.tags?.map(t => <Tag key={t} variant="ghost">{t}</Tag>)}
+              <div
+                style={{
+                  background: T.surface,
+                  border: `2px solid ${T.border}`,
+                  boxShadow: '4px 4px 0 rgba(0,0,0,0.4)',
+                  padding: '14px 18px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: 16,
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                    <Tag>{DOMAINS[entry.domain] ?? `D:${entry.domain}`}</Tag>
+                    {entry.tags?.map(t => <Tag key={t} variant="ghost">{t}</Tag>)}
+                  </div>
+                  {entry.content && (
+                    <p style={{ fontSize: 10, color: T.text, margin: '0 0 10px', lineHeight: 1.7, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {entry.content}
+                    </p>
+                  )}
+                  <span style={{ fontSize: 9, color: T.muted, fontFamily: T.codeFont }}>{truncate(entry.submitter)}</span>
                 </div>
-                {entry.content && (
-                  <p style={{ fontSize: 10, color: T.text, margin: '0 0 10px', lineHeight: 1.7, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                    {entry.content}
-                  </p>
+                {entry._similarity !== undefined && (
+                  <span style={{ fontFamily: T.pixelFont, fontSize: 8, color: T.accent, flexShrink: 0 }}>
+                    {Math.round(entry._similarity * 100)}%
+                  </span>
                 )}
-                <span style={{ fontSize: 9, color: T.muted, fontFamily: T.codeFont }}>{truncate(entry.submitter)}</span>
               </div>
-              {entry._similarity !== undefined && (
-                <span style={{ fontFamily: T.pixelFont, fontSize: 8, color: T.accent, flexShrink: 0 }}>
-                  {Math.round(entry._similarity * 100)}%
-                </span>
-              )}
-            </div>
+            </Link>
           ))}
         </div>
       )}
